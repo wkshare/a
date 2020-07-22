@@ -4,7 +4,7 @@
 
 #0: normal
 #1:mysql server runing
-#2:mysql slave not runing 
+#2:mysql subordinate not runing 
 #3:mysql connecting mysql error,check mysql user or password.
 
 import os
@@ -65,10 +65,10 @@ keys = [
 ]
 
 
-slave_keys = [
-    "slave_io_running",
-    "seconds_behind_master",
-    "slave_sql_running"
+subordinate_keys = [
+    "subordinate_io_running",
+    "seconds_behind_main",
+    "subordinate_sql_running"
 ]
 
 
@@ -105,22 +105,22 @@ def mysql_instance():
             # ignore Percona Xtradb Cluster group communication port
             continue
         mysql_status(mysql_listen_ip,mysql_listen_port,keys)
-        mysql_status_slave(mysql_listen_ip,mysql_listen_port,slave_keys)
+        mysql_status_subordinate(mysql_listen_ip,mysql_listen_port,subordinate_keys)
 
 
-def mysql_status_slave(ip,port,slave_keys):
-    mysql_command = 'mysql -h %s -P %s -uzabbix -p4rfvQcos -e "show slave status;"' % (ip, port)
+def mysql_status_subordinate(ip,port,subordinate_keys):
+    mysql_command = 'mysql -h %s -P %s -uzabbix -p4rfvQcos -e "show subordinate status;"' % (ip, port)
     mysql_status,command_result = check_stdout(mysql_command)
     if mysql_status != 0 or len(command_result) == 0:
-        print "mysql_status{mysql_host=\"%s:%s\",type=\"slave_status\"} 2" % (hostname, port)
+        print "mysql_status{mysql_host=\"%s:%s\",type=\"subordinate_status\"} 2" % (hostname, port)
         return
     else:
-        print "mysql_status{mysql_host=\"%s:%s\",type=\"slave_status\"} 0" % (hostname, port)
+        print "mysql_status{mysql_host=\"%s:%s\",type=\"subordinate_status\"} 0" % (hostname, port)
         result_list = command_result.split('\n')
         result_list_lower = [j.lower() for j in result_list]
         result_list_lower_tmp = [ i.split('\t') for i in result_list_lower ]
         result_dict = dict(zip(result_list_lower_tmp[0],result_list_lower_tmp[1]))
-        for k in slave_keys:
+        for k in subordinate_keys:
             if result_dict.has_key(k):
                 if result_dict[k] == 'yes':
                     ret_k = 1
